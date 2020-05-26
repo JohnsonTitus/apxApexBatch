@@ -1,0 +1,59 @@
+//create a class that implements Iterator:
+global class CustomIterable 
+   implements Iterator<Account>{ 
+
+   List<Account> accs {get; set;} 
+   Integer i {get; set;} 
+
+   public CustomIterable(){ 
+       accs = 
+       [SELECT Id, Name, 
+       NumberOfEmployees 
+       FROM Account ]; 
+       i = 0; 
+   }   
+
+   global boolean hasNext(){ 
+       
+       if(i >= accs.size()) {
+           System.debug('size of records ' + accs.size());
+           return false; 
+       } else {
+           return true; 
+       }
+      
+   }    
+
+   global Account next(){ 
+
+       if(accs[i] == null){
+           return null;
+       }
+       i++;
+       return accs[i-1];
+       
+   } 
+}
+//Create a class that implements Iterable
+global class example implements iterable<Account>{
+   global Iterator<Account> Iterator(){
+      return new CustomIterable();
+   }
+}
+//Create the Batch class that uses the Iterable class
+global class batchClass implements Database.batchable<Account>{ 
+   global Iterable<Account> start(Database.batchableContext info){ 
+       return new example(); 
+   }     
+   global void execute(Database.batchableContext info, List<Account> scope){ 
+       List<Account> accsToUpdate = new List<Account>(); 
+       for(Account a : scope){ 
+           //a.Name = 'true'; 
+           a.NumberOfEmployees = 69; 
+           accsToUpdate.add(a); 
+       } 
+       update accsToUpdate; 
+   }     
+   global void finish(Database.batchableContext info){     
+   } 
+}
